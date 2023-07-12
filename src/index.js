@@ -1,19 +1,38 @@
-// var express = require('express');
+import http from 'http';
+import Server from './initialize/App';
+import socket from './shared/socket';
 
-import Express from "express";
-const app = Express();
-app.get('/', (req,res)=> {res.send('hello world')})
+const socketMap = new Map();
+// initialize routes
+const appServer = Server.bootstrap(socketMap);
+// require express()
+const App = appServer.app;
 
-app.listen(3000, ()=>console.log('i am running'))
+const port = normalizePort(process.env.PORT || '7051');
+App.set('port', port);
 
+//  passed express() to the http.Server() method.
+const server = http.createServer(App);
 
-// const express = require('express')
-// const app = express()
-// const port = 3000
+/*  Next, we passed the HTTP server directly
+    to the SocketIO method exactly as
+    we would have if we were using a nonExpress HTTP server.
+*/
+socket(server);
 
-// app.get('/', (req, res) => {
-//   res.send('Hello World!')
-// })
+server.listen(port, () => {
+    console.log(`i am listening on port: ${port}`)
+})
 
-// app.listen(port, () => {
-//   con
+function normalizePort(val) {
+    let port = parseInt(val, 10);
+
+    if (isNaN(port)) {
+        return val;
+    }
+
+    if (port >= 0) {
+        return port;
+    }
+    return false;
+}
